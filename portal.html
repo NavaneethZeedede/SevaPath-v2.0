@@ -1,0 +1,203 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>SevaPath — Digital Government Case Lifecycle</title>
+  <link rel="stylesheet" href="portal.css">
+  <link rel="stylesheet" href="portal-v2.css">
+</head>
+<body>
+  <main class="app">
+    <!-- LOGIN VIEW -->
+    <section id="login" class="view active">
+      <header class="gov-header">
+        <div class="seal">S</div>
+        <div><strong>SevaPath Digital Services</strong><small>PUBLIC SERVICE DELIVERY PROTOTYPE</small></div>
+        <span>🔒 Secure demo</span>
+      </header>
+      <div class="login-main">
+        <div class="notice">PROTOTYPE · NOT AN OFFICIAL GOVERNMENT WEBSITE</div>
+        <h1>One online case. Clear updates at every step.</h1>
+        <p class="intro">A safe demonstration of how a state service could coordinate inheritance, property-record and revenue tasks after a death.</p>
+        <div class="login-card">
+          <h2>Sign in to continue</h2>
+          <p>Choose a demo account. No personal data, OTP, or government identity is used.</p>
+          <button class="role citizen" data-login="citizen"><span>👤</span><b>Citizen / family member</b><small>Track your case and upload requested documents</small></button>
+          <button class="role officer" data-login="officer"><span>🛡️</span><b>Authorised official</b><small>Review assigned cases and record decisions</small></button>
+          <button class="role senior" data-login="senior"><span>⭐</span><b>Senior Officer</b><small>View escalations and department overview</small></button>
+          <button class="role admin" data-login="admin"><span>⚙️</span><b>Administrator</b><small>Configure workflows and view all cases</small></button>
+          <p class="small">In production: verified login, consent, audit logs, jurisdiction-based access and approved departmental integrations.</p>
+        </div>
+      </div>
+      <footer>Accessible on mobile · Assisted-service friendly · English / हिंदी</footer>
+    </section>
+
+    <!-- CITIZEN VIEW -->
+    <section id="citizen" class="view">
+      <header class="gov-header">
+        <div class="seal">S</div>
+        <div><strong>SevaPath Digital Services</strong><small>MY CASES · SYNTHETIC DATA</small></div>
+        <button class="logout">Sign out</button>
+      </header>
+      <div class="portal">
+        <div class="welcome-row">
+          <div>
+            <p class="eyebrow">WELCOME, ANITA · DEMO ACCOUNT</p>
+            <h1>Your family's case</h1>
+            <p>We will tell you what is needed and when.</p>
+          </div>
+        </div>
+        <div class="case-banner">
+          <div><span>CASE ID</span><strong>SVP-2026-00124</strong></div>
+          <div><span>STATUS</span><strong id="citizen-status">Under Review</strong></div>
+          <div><span>NEXT REVIEW</span><strong>After upload</strong></div>
+        </div>
+        <div id="current-owner"></div>
+        <div id="action-center"></div>
+        <div id="journey-container"></div>
+        <div id="timeline-container"></div>
+        <div id="citizen-documents"></div>
+      </div>
+    </section>
+
+    <!-- OFFICER VIEW -->
+    <section id="officer" class="view">
+      <header class="gov-header dark">
+        <div class="seal">S</div>
+        <div><strong>SevaPath Official Console</strong><small>REVENUE DESK · DEMO AUTHENTICATED SESSION</small></div>
+        <button class="logout">Sign out</button>
+      </header>
+      <div class="portal official">
+        <div class="welcome-row">
+          <div>
+            <p class="eyebrow">REVENUE DESK · OFFICER RK</p>
+            <h1>Assigned work queue</h1>
+            <p>Decisions require reasons and are recorded in the audit trail.</p>
+          </div>
+          <div class="online">● Online</div>
+        </div>
+        <div class="metrics">
+          <div><b id="metric-active">0</b><span>Active Cases</span></div>
+          <div><b id="metric-citizen">0</b><span>Awaiting Citizen</span></div>
+          <div><b id="metric-decision">0</b><span>Awaiting Decision</span></div>
+          <div><b id="metric-risk">0</b><span>At SLA Risk</span></div>
+          <div><b id="metric-breach">0</b><span>SLA Breached</span></div>
+        </div>
+        <div class="queue-section">
+          <div class="queue-header">
+            <h2>My cases</h2>
+            <div class="queue-filters">
+              <button class="filter active" data-filter="all">All</button>
+              <button class="filter" data-filter="new">New</button>
+              <button class="filter" data-filter="review">Review</button>
+              <button class="filter" data-filter="action">Action</button>
+              <button class="filter" data-filter="escalated">Escalated</button>
+              <button class="filter" data-filter="overdue">Overdue</button>
+              <button class="filter" data-filter="completed">Completed</button>
+            </div>
+          </div>
+          <div class="queue" id="case-queue"></div>
+        </div>
+        <section class="case-panel">
+          <div id="case-detail"></div>
+          <div id="decision-area" class="decision-area"></div>
+        </section>
+      </div>
+    </section>
+
+    <!-- SENIOR OFFICER VIEW -->
+    <section id="senior" class="view">
+      <header class="gov-header dark">
+        <div class="seal">S</div>
+        <div><strong>SevaPath — Senior Officer Console</strong><small>ESCALATIONS & DEPARTMENT OVERVIEW</small></div>
+        <button class="logout">Sign out</button>
+      </header>
+      <div class="portal">
+        <div class="welcome-row">
+          <div>
+            <p class="eyebrow">SENIOR OFFICER · SUPERVISOR VIEW</p>
+            <h1>Escalations & Department Overview</h1>
+            <p>Monitor SLA breaches and escalated cases.</p>
+          </div>
+        </div>
+        <div class="metrics">
+          <div><b id="senior-escalated">0</b><span>Escalated Cases</span></div>
+          <div><b id="senior-risk">0</b><span>At SLA Risk</span></div>
+          <div><b id="senior-breached">0</b><span>SLA Breached</span></div>
+        </div>
+        <div class="queue-section">
+          <h2>Escalated Cases</h2>
+          <div class="queue" id="escalations-list"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ADMIN VIEW -->
+    <section id="admin" class="view">
+      <header class="gov-header dark">
+        <div class="seal">S</div>
+        <div><strong>SevaPath — Government Case Control Room</strong><small>ADMINISTRATOR · ALL CASES</small></div>
+        <button class="logout">Sign out</button>
+      </header>
+      <div class="portal">
+        <div class="welcome-row">
+          <div>
+            <p class="eyebrow">ADMINISTRATOR · CONTROL ROOM</p>
+            <h1>Government Case Control Room</h1>
+            <p>View and manage all cases across departments.</p>
+          </div>
+        </div>
+        <div class="admin-table-section">
+          <h2>All Cases</h2>
+          <table class="admin-table">
+            <thead>
+              <tr><th>Case ID</th><th>Service</th><th>Department</th><th>Status</th><th>Officer</th><th>SLA</th></tr>
+            </thead>
+            <tbody id="admin-case-table"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- DEMO CONTROLS -->
+    <div id="demo-panel" class="demo-panel">
+      <h3>Prototype Demonstration Controls</h3>
+      <p class="demo-warning">These controls are for demonstration purposes only.</p>
+      <div class="demo-actions">
+        <button onclick="demoAdvanceStage()">Advance Case Stage</button>
+        <button onclick="demoTriggerDocRequest()">Trigger Document Request</button>
+        <button onclick="demoSimulateUpload()">Simulate Citizen Upload</button>
+        <button onclick="demoSimulateHandoff()">Simulate Department Handoff</button>
+        <button onclick="demoAcceptHandoff()">Accept Handoff</button>
+        <button onclick="demoTriggerSLAWarning()">Trigger SLA Warning</button>
+        <button onclick="demoTriggerSLABreach()">Trigger SLA Breach</button>
+        <button onclick="demoSimulateEscalation()">Simulate Escalation</button>
+        <button onclick="demoReassignCase()">Reassign Case</button>
+        <button onclick="demoResolveEscalation()">Resolve Escalation</button>
+        <button onclick="demoApproveCase()">Approve Case</button>
+        <button onclick="demoReset()" class="danger">Reset Demo</button>
+      </div>
+    </div>
+
+    <!-- PROTOTYPE DISCLOSURE -->
+    <div class="prototype-disclaimer">
+      <p><strong>SevaPath Prototype</strong> — This demonstration uses synthetic citizen information, mock cases and simulated government integrations. It does not represent an actual government portal or production government authority.</p>
+    </div>
+  </main>
+
+  <!-- Load modules in order -->
+  <script src="case-store.js"></script>
+  <script src="workflow.js"></script>
+  <script src="sla-engine.js"></script>
+  <script src="notifications.js"></script>
+  <script src="audit.js"></script>
+  <script src="documents.js"></script>
+  <script src="roles.js"></script>
+  <script src="portal-app.js"></script>
+  <script>
+    // Initialize on load
+    document.addEventListener('DOMContentLoaded', init);
+  </script>
+</body>
+</html>
