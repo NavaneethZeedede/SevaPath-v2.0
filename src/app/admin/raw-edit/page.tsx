@@ -2,6 +2,7 @@ import * as store from "@/lib/store";
 import { RawEditForm } from "@/components/RawEditForm";
 
 export const dynamic = "force-dynamic";
+export const revalidate = 0;
 
 export default async function AdminRawEditPage() {
   const cases = await store.listCases();

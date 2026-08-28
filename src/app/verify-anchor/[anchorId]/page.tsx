@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import * as store from "@/lib/store";
 
 export const dynamic = "force-dynamic";
+export const revalidate = 0;
 
 export default async function VerifyAnchorPage({ params }: { params: { anchorId: string } }) {
   const anchor = await store.getAnchor(params.anchorId);

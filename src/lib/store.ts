@@ -165,10 +165,22 @@ function anchorToObj(row: SupabaseAnchorRow): Anchor {
 
 /* --------------------------- public API --------------------------- */
 
+async function sbGet<T>(query: PromiseLike<any>): Promise<T | undefined> {
+  const { data, error } = await query;
+  if (error) {
+    console.error("[store] Supabase query error:", error);
+    return undefined;
+  }
+  return data ?? undefined;
+}
+
 export async function getActor(id: string): Promise<Actor | undefined> {
   if (supabase) {
-    const { data } = await supabase.from("actors").select("*").eq("id", id).maybeSingle();
-    return data ? actorToObj(data) : undefined;
+    const data = await sbGet<SupabaseActorRow>(supabase.from("actors").select("*").eq("id", id).maybeSingle());
+    if (data) return actorToObj(data);
+    const local = (await load()).actors[id];
+    if (local) return local;
+    return undefined;
   }
   return (await load()).actors[id];
 }
@@ -176,16 +188,22 @@ export async function getActor(id: string): Promise<Actor | undefined> {
 export async function getActorByEmail(email: string): Promise<Actor | undefined> {
   const lower = email.trim().toLowerCase();
   if (supabase) {
-    const { data } = await supabase.from("actors").select("*").ilike("email", lower).maybeSingle();
-    return data ? actorToObj(data) : undefined;
+    const data = await sbGet<SupabaseActorRow>(supabase.from("actors").select("*").ilike("email", lower).maybeSingle());
+    if (data) return actorToObj(data);
+    const local = Object.values((await load()).actors).find((a) => a.email.toLowerCase() === lower);
+    if (local) return local;
+    return undefined;
   }
   return Object.values((await load()).actors).find((a) => a.email.toLowerCase() === lower);
 }
 
 export async function listActors(): Promise<Actor[]> {
   if (supabase) {
-    const { data } = await supabase.from("actors").select("*").order("role").order("id");
-    return (data ?? []).map(actorToObj);
+    const data = await sbGet<SupabaseActorRow[]>(supabase.from("actors").select("*").order("role").order("id"));
+    if (data) return data.map(actorToObj);
+    return Object.values((await load()).actors).sort((a, b) =>
+      a.role === b.role ? a.id.localeCompare(b.id) : a.role.localeCompare(b.role)
+    );
   }
   return Object.values((await load()).actors).sort((a, b) =>
     a.role === b.role ? a.id.localeCompare(b.id) : a.role.localeCompare(b.role)
@@ -194,7 +212,7 @@ export async function listActors(): Promise<Actor[]> {
 
 export async function insertActor(a: Actor): Promise<void> {
   if (supabase) {
-    await supabase.from("actors").upsert({
+    const { error } = await supabase.from("actors").upsert({
       id: a.id,
       name: a.name,
       role: a.role,
@@ -202,6 +220,12 @@ export async function insertActor(a: Actor): Promise<void> {
       email: a.email,
       secret_key: a.secretKey,
     });
+    if (error) {
+      console.error("[store] Supabase insertActor error:", error);
+      const db = await load();
+      db.actors[a.id] = { ...a };
+      await save();
+    }
     return;
   }
   const db = await load();
@@ -211,7 +235,7 @@ export async function insertActor(a: Actor): Promise<void> {
 
 export async function insertCase(c: GrievanceCase): Promise<void> {
   if (supabase) {
-    await supabase.from("cases").upsert({
+    const { error } = await supabase.from("cases").upsert({
       case_id: c.case_id,
       citizen_id: c.citizen_id,
       title: c.title,
@@ -224,6 +248,12 @@ export async function insertCase(c: GrievanceCase): Promise<void> {
       status: c.status,
       created_at: c.created_at,
     });
+    if (error) {
+      console.error("[store] Supabase insertCase error:", error);
+      const db = await load();
+      db.cases[c.case_id] = { ...c };
+      await save();
+    }
     return;
   }
   const db = await load();
@@ -233,8 +263,11 @@ export async function insertCase(c: GrievanceCase): Promise<void> {
 
 export async function getCase(caseId: string): Promise<GrievanceCase | undefined> {
   if (supabase) {
-    const { data } = await supabase.from("cases").select("*").eq("case_id", caseId).maybeSingle();
-    return data ? caseToObj(data) : undefined;
+    const data = await sbGet<SupabaseCaseRow>(supabase.from("cases").select("*").eq("case_id", caseId).maybeSingle());
+    if (data) return caseToObj(data);
+    const local = (await load()).cases[caseId];
+    if (local) return local;
+    return undefined;
   }
   return (await load()).cases[caseId];
 }
@@ -244,8 +277,8 @@ export async function listCases(filter?: { citizenId?: string; department?: stri
     let query = supabase.from("cases").select("*");
     if (filter?.citizenId) query = query.eq("citizen_id", filter.citizenId);
     else if (filter?.department) query = query.eq("department", filter.department);
-    const { data } = await query.order("created_at", { ascending: false });
-    return (data ?? []).map(caseToObj);
+    const data = await sbGet<SupabaseCaseRow[]>(query.order("created_at", { ascending: false }));
+    if (data) return data.map(caseToObj);
   }
   const all = Object.values((await load()).cases);
   let out = all;
@@ -258,7 +291,17 @@ export async function updateCaseStatus(caseId: string, status: GrievanceAction, 
   if (supabase) {
     const updates: Record<string, unknown> = { status };
     if (department) updates.department = department;
-    await supabase.from("cases").update(updates).eq("case_id", caseId);
+    const { error } = await supabase.from("cases").update(updates).eq("case_id", caseId);
+    if (error) {
+      console.error("[store] Supabase updateCaseStatus error:", error);
+      const db = await load();
+      const c = db.cases[caseId];
+      if (c) {
+        c.status = status;
+        if (department) c.department = department;
+        await save();
+      }
+    }
     return;
   }
   const db = await load();
@@ -271,7 +314,7 @@ export async function updateCaseStatus(caseId: string, status: GrievanceAction, 
 
 export async function insertEvent(e: GrievanceEvent): Promise<void> {
   if (supabase) {
-    await supabase.from("events").upsert({
+    const { error } = await supabase.from("events").upsert({
       event_id: e.event_id,
       case_id: e.case_id,
       sequence_number: e.sequence_number,
@@ -285,6 +328,12 @@ export async function insertEvent(e: GrievanceEvent): Promise<void> {
       signature: e.signature,
       event_hash: e.event_hash,
     });
+    if (error) {
+      console.error("[store] Supabase insertEvent error:", error);
+      const db = await load();
+      db.events.push({ ...e });
+      await save();
+    }
     return;
   }
   const db = await load();
@@ -294,12 +343,13 @@ export async function insertEvent(e: GrievanceEvent): Promise<void> {
 
 export async function getEventsByCase(caseId: string): Promise<GrievanceEvent[]> {
   if (supabase) {
-    const { data } = await supabase
-      .from("events")
-      .select("*")
-      .eq("case_id", caseId)
-      .order("sequence_number", { ascending: true });
-    return (data ?? []).map(eventToObj);
+    const data = await sbGet<SupabaseEventRow[]>(
+      supabase.from("events").select("*").eq("case_id", caseId).order("sequence_number", { ascending: true })
+    );
+    if (data) return data.map(eventToObj);
+    return (await load())
+      .events.filter((e) => e.case_id === caseId)
+      .sort((a, b) => a.sequence_number - b.sequence_number);
   }
   return (await load())
     .events.filter((e) => e.case_id === caseId)
@@ -308,14 +358,14 @@ export async function getEventsByCase(caseId: string): Promise<GrievanceEvent[]>
 
 export async function getLastEventHash(caseId: string): Promise<string> {
   if (supabase) {
-    const { data } = await supabase
-      .from("events")
-      .select("event_hash")
-      .eq("case_id", caseId)
-      .order("sequence_number", { ascending: false })
-      .limit(1)
-      .maybeSingle();
-    return data?.event_hash ?? "GENESIS";
+    const data = await sbGet<{ event_hash: string }>(
+      supabase.from("events").select("event_hash").eq("case_id", caseId).order("sequence_number", { ascending: false }).limit(1).maybeSingle()
+    );
+    if (data?.event_hash) return data.event_hash;
+    const local = (await load()).events.filter((e) => e.case_id === caseId);
+    if (local.length === 0) return "GENESIS";
+    const sorted = local.sort((a, b) => b.sequence_number - a.sequence_number);
+    return sorted[0].event_hash;
   }
   const evs = (await load()).events.filter((e) => e.case_id === caseId);
   if (evs.length === 0) return "GENESIS";
@@ -329,22 +379,32 @@ export async function countEvents(caseId: string): Promise<number> {
       .from("events")
       .select("*", { count: "exact", head: true })
       .eq("case_id", caseId);
-    return count ?? 0;
+    return count ?? (await load()).events.filter((e) => e.case_id === caseId).length;
   }
   return (await load()).events.filter((e) => e.case_id === caseId).length;
 }
 
 export async function getEvent(eventId: string): Promise<GrievanceEvent | undefined> {
   if (supabase) {
-    const { data } = await supabase.from("events").select("*").eq("event_id", eventId).maybeSingle();
-    return data ? eventToObj(data) : undefined;
+    const data = await sbGet<SupabaseEventRow>(supabase.from("events").select("*").eq("event_id", eventId).maybeSingle());
+    if (data) return eventToObj(data);
+    return (await load()).events.find((e) => e.event_id === eventId);
   }
   return (await load()).events.find((e) => e.event_id === eventId);
 }
 
 export async function rawUpdateEventPayload(eventId: string, payload: unknown): Promise<void> {
   if (supabase) {
-    await supabase.from("events").update({ payload }).eq("event_id", eventId);
+    const { error } = await supabase.from("events").update({ payload }).eq("event_id", eventId);
+    if (error) {
+      console.error("[store] Supabase rawUpdateEventPayload error:", error);
+      const db = await load();
+      const ev = db.events.find((e) => e.event_id === eventId);
+      if (ev) {
+        ev.payload = payload as GrievanceEvent["payload"];
+        await save();
+      }
+    }
     return;
   }
   const db = await load();
