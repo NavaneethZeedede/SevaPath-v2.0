@@ -2,8 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-
-const CATEGORIES = ["Water Supply", "Electricity", "Roads", "Sanitation", "Property/Tax", "Other"];
+import { CATEGORIES, departmentForCategory } from "@/lib/departments";
 
 export function FileGrievanceForm() {
   const router = useRouter();
@@ -83,6 +82,9 @@ export function FileGrievanceForm() {
             <option key={c}>{c}</option>
           ))}
         </select>
+        <p className="mt-1 text-xs text-slate-400">
+          Will be routed to <span className="font-medium text-slate-600">{departmentForCategory(category)}</span>
+        </p>
       </div>
       <div>
         <label className="text-sm font-medium text-slate-700">Description</label>

@@ -35,3 +35,6 @@ export function departmentForCategory(category: string | null | undefined): stri
 export const ALL_DEPARTMENTS: string[] = Array.from(
   new Set(Object.values(CATEGORY_TO_DEPARTMENT))
 );
+
+/** The grievance categories offered in the filing form (derived from the mapping, so always in sync). */
+export const CATEGORIES: string[] = Object.keys(CATEGORY_TO_DEPARTMENT);
