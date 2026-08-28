@@ -6,8 +6,8 @@ import { AnchorIndicator } from "@/components/AnchorIndicator";
 import { Timeline } from "@/components/Timeline";
 import { HowItWorks } from "@/components/HowItWorks";
 
-export default function CitizenCasePage({ params }: { params: { caseId: string } }) {
-  const view = getCaseView(params.caseId);
+export default async function CitizenCasePage({ params }: { params: { caseId: string } }) {
+  const view = await getCaseView(params.caseId);
   if (!view) notFound();
 
   return (

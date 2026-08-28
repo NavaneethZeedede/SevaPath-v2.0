@@ -1,11 +1,6 @@
 import { Actor, GrievanceAction, GrievanceCase } from "./types";
 import * as store from "./store";
 
-/**
- * Email notifications. Real transactional email via Resend when RESEND_API_KEY
- * is set; otherwise (and always, for demo visibility) the message is written to
- * the in-app demo inbox at /inbox so it visibly "fires" during the live demo.
- */
 const ACTION_LABEL: Record<GrievanceAction, string> = {
   FILED: "received",
   ASSIGNED: "assigned to an officer",
@@ -19,7 +14,7 @@ export async function notifyCaseChange(
   action: GrievanceAction,
   actor: Actor
 ): Promise<void> {
-  const citizen = store.getActor(gCase.citizen_id);
+  const citizen = await store.getActor(gCase.citizen_id);
   const to = citizen?.email ?? "citizen@example.com";
   const subject = `SevaPath update: your grievance ${gCase.case_id} has been ${ACTION_LABEL[action]}`;
   const body =
@@ -30,7 +25,7 @@ export async function notifyCaseChange(
     `Open your case to view the full, verified timeline: /citizen/${gCase.case_id}\n\n` +
     `— SevaPath Integrity Tracker`;
 
-  store.insertEmail(to, subject, body, gCase.case_id);
+  await store.insertEmail(to, subject, body, gCase.case_id);
 
   const key = process.env.RESEND_API_KEY;
   if (key) {

@@ -4,15 +4,17 @@ import * as store from "@/lib/store";
 
 export const dynamic = "force-dynamic";
 
-export default function VerifyAnchorPage({ params }: { params: { anchorId: string } }) {
-  const anchor = store.getAnchor(params.anchorId);
+export default async function VerifyAnchorPage({ params }: { params: { anchorId: string } }) {
+  const anchor = await store.getAnchor(params.anchorId);
   if (!anchor) notFound();
 
-  const events = anchor.events_covered.map((c) => {
-    const [caseId, seq] = c.split("#");
-    const ev = store.getEventsByCase(caseId).find((e) => e.sequence_number === Number(seq));
-    return ev ? { caseId, seq, event_id: ev.event_id, action: ev.action, event_hash: ev.event_hash } : null;
-  }).filter(Boolean) as { caseId: string; seq: string; event_id: string; action: string; event_hash: string }[];
+  const events = await Promise.all(
+    anchor.events_covered.map(async (c) => {
+      const [caseId, seq] = c.split("#");
+      const ev = (await store.getEventsByCase(caseId)).find((e) => e.sequence_number === Number(seq));
+      return ev ? { caseId, seq, event_id: ev.event_id, action: ev.action, event_hash: ev.event_hash } : null;
+    })
+  ).then((results) => results.filter(Boolean) as { caseId: string; seq: string; event_id: string; action: string; event_hash: string }[]);
 
   const methodLabel =
     anchor.method === "github-gist" ? "GitHub Gist (external, immutable)" :

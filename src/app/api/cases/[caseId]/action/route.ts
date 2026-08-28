@@ -7,11 +7,11 @@ import { GrievanceAction } from "@/lib/types";
 const OFFICER_ACTIONS: GrievanceAction[] = ["ASSIGNED", "ESCALATED", "RESPONDED", "CLOSED"];
 
 export async function POST(req: NextRequest, { params }: { params: { caseId: string } }) {
-  const actor = getCurrentActor();
+  const actor = await getCurrentActor();
   if (!actor || (actor.role !== "OFFICER" && actor.role !== "SUPERVISOR")) {
     return NextResponse.json({ error: "Officers only" }, { status: 403 });
   }
-  const gCase = store.getCase(params.caseId);
+  const gCase = await store.getCase(params.caseId);
   if (!gCase) return NextResponse.json({ error: "Case not found" }, { status: 404 });
 
   const body = await req.json().catch(() => ({}));
@@ -24,7 +24,7 @@ export async function POST(req: NextRequest, { params }: { params: { caseId: str
     const toDepartment = String(body.toDepartment ?? gCase.department);
     const reason = String(body.reason ?? "").trim();
     if (!reason) return NextResponse.json({ error: "Escalation reason is required" }, { status: 400 });
-    appendEvent({
+    await appendEvent({
       caseId: params.caseId,
       action,
       actor,
@@ -37,12 +37,12 @@ export async function POST(req: NextRequest, { params }: { params: { caseId: str
   if (action === "CLOSED") {
     const closureReason = String(body.closureReason ?? "").trim();
     if (!closureReason) return NextResponse.json({ error: "Closure reason is required" }, { status: 400 });
-    appendEvent({ caseId: params.caseId, action, actor, payload: { closureReason } });
+    await appendEvent({ caseId: params.caseId, action, actor, payload: { closureReason } });
     return NextResponse.json({ ok: true });
   }
 
   if (action === "ASSIGNED") {
-    appendEvent({
+    await appendEvent({
       caseId: params.caseId,
       action,
       actor,
@@ -51,9 +51,8 @@ export async function POST(req: NextRequest, { params }: { params: { caseId: str
     return NextResponse.json({ ok: true });
   }
 
-  // RESPONDED
   const update = String(body.update ?? "").trim();
   if (!update) return NextResponse.json({ error: "Update text is required" }, { status: 400 });
-  appendEvent({ caseId: params.caseId, action, actor, payload: { update } });
+  await appendEvent({ caseId: params.caseId, action, actor, payload: { update } });
   return NextResponse.json({ ok: true });
 }

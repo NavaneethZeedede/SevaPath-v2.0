@@ -3,8 +3,8 @@ import { getCaseSummaries } from "@/lib/caseService";
 import { StatusPill } from "@/app/citizen/page";
 import * as store from "@/lib/store";
 
-export default function SupervisorDashboard() {
-  const summaries = getCaseSummaries();
+export default async function SupervisorDashboard() {
+  const summaries = await getCaseSummaries();
   const breaches = summaries.filter((s) => s.status === "INTEGRITY_BREACH");
   const verified = summaries.filter((s) => s.status === "VERIFIED");
   const closed = summaries.filter((s) => s.case.status === "CLOSED");
@@ -14,7 +14,7 @@ export default function SupervisorDashboard() {
     let total = 0;
     let n = 0;
     for (const s of closed) {
-      const events = store.getEventsByCase(s.case.case_id);
+      const events = await store.getEventsByCase(s.case.case_id);
       const closeEv = events.find((e) => e.action === "CLOSED");
       if (closeEv) {
         total += (new Date(closeEv.timestamp).getTime() - new Date(s.case.created_at).getTime()) / 3.6e6;

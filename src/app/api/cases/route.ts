@@ -7,30 +7,35 @@ import { appendEvent } from "@/lib/append";
 import { reverseGeocode } from "@/lib/geocode";
 
 export async function GET() {
-  const actor = getCurrentActor();
+  const actor = await getCurrentActor();
   if (!actor) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  let cases = store.listCases();
-  if (actor.role === "CITIZEN") cases = store.listCases({ citizenId: actor.id });
-  else if (actor.role === "OFFICER") cases = store.listCases({ department: actor.department ?? "" });
+  let cases = await store.listCases();
+  if (actor.role === "CITIZEN") cases = await store.listCases({ citizenId: actor.id });
+  else if (actor.role === "OFFICER") cases = await store.listCases({ department: actor.department ?? "" });
 
-  const out = cases.map((c) => {
-    const events = store.getEventsByCase(c.case_id);
-    const v = verifyChain(events, (id) => store.getActor(id)?.secretKey);
-    const anchors = store.getAnchorsForCase(c.case_id);
-    return {
-      case: c,
-      verificationStatus: v.status,
-      anchorCount: anchors.length,
-      lastAnchoredAt: anchors[0]?.anchored_at ?? null,
-      breachedEventSeq: v.status === "INTEGRITY_BREACH" ? v.events.find((e) => !e.ok)?.sequence_number : null,
-    };
-  });
+  const actors = await store.listActors();
+  const secretKeys = new Map(actors.map((a) => [a.id, a.secretKey]));
+
+  const out = await Promise.all(
+    cases.map(async (c) => {
+      const events = await store.getEventsByCase(c.case_id);
+      const v = verifyChain(events, (id) => secretKeys.get(id));
+      const anchors = await store.getAnchorsForCase(c.case_id);
+      return {
+        case: c,
+        verificationStatus: v.status,
+        anchorCount: anchors.length,
+        lastAnchoredAt: anchors[0]?.anchored_at ?? null,
+        breachedEventSeq: v.status === "INTEGRITY_BREACH" ? v.events.find((e) => !e.ok)?.sequence_number : null,
+      };
+    })
+  );
   return NextResponse.json({ cases: out });
 }
 
 export async function POST(req: NextRequest) {
-  const actor = getCurrentActor();
+  const actor = await getCurrentActor();
   if (!actor || actor.role !== "CITIZEN") {
     return NextResponse.json({ error: "Only citizens may file grievances" }, { status: 403 });
   }
@@ -52,7 +57,7 @@ export async function POST(req: NextRequest) {
   }
 
   const caseId = `SVP-${Math.floor(1000 + Math.random() * 9000)}-${crypto.randomUUID().slice(0, 4)}`;
-  store.insertCase({
+  await store.insertCase({
     case_id: caseId,
     citizen_id: actor.id,
     title,
@@ -66,7 +71,7 @@ export async function POST(req: NextRequest) {
     created_at: new Date().toISOString(),
   });
 
-  appendEvent({
+  await appendEvent({
     caseId,
     action: "FILED",
     actor,

@@ -95,16 +95,16 @@ const SEED_CASES: SeedCase[] = [
 
 let seeded = false;
 
-export function ensureSeeded(): void {
+export async function ensureSeeded(): Promise<void> {
   if (seeded) return;
-  const db = store.getActor("CIT_1");
-  if (db) {
+  const existing = await store.getActor("CIT_1");
+  if (existing) {
     seeded = true;
     return;
   }
 
   for (const a of SEED_ACTORS) {
-    store.insertActor({
+    await store.insertActor({
       id: a.id,
       name: a.name,
       role: a.role,
@@ -129,12 +129,14 @@ export function ensureSeeded(): void {
       status: "FILED",
       created_at: createdAt,
     };
-    store.insertCase(gCase);
+    await store.insertCase(gCase);
 
     let prev = "GENESIS";
     const events: GrievanceEvent[] = [];
-    c.events.forEach((spec, i) => {
-      const actor = store.getActor(spec.actorId)!;
+    for (let i = 0; i < c.events.length; i++) {
+      const spec = c.events[i];
+      const actor = await store.getActor(spec.actorId);
+      if (!actor) continue;
       const seq = i + 1;
       const ts = new Date(new Date(createdAt).getTime() + i * 1000 * 60 * 60 * 5).toISOString();
       const ev = buildEvent({
@@ -149,16 +151,15 @@ export function ensureSeeded(): void {
         payload: spec.payload,
         secretKey: actor.secretKey,
       });
-      store.insertEvent(ev);
+      await store.insertEvent(ev);
       prev = ev.event_hash;
       events.push(ev);
-    });
-    store.updateCaseStatus(c.case_id, c.events[c.events.length - 1].action);
+    }
+    await store.updateCaseStatus(c.case_id, c.events[c.events.length - 1].action);
   }
 
   seeded = true;
 
-  // Pre-anchor the seed cases so the anchor indicator is populated in the demo.
   for (const c of SEED_CASES) {
     forceAnchor(c.case_id).catch(() => {});
   }

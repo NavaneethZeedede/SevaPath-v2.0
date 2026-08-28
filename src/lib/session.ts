@@ -3,16 +3,6 @@ import crypto from "crypto";
 import { Actor } from "./types";
 import * as store from "./store";
 
-/**
- * Stateless, signed-cookie auth.
- *
- * Why: on serverless platforms (Vercel) each request can hit a different
- * instance with its own ephemeral storage, so a server-side session table is
- * not shared across instances and login breaks. Instead the cookie carries a
- * signed actor id; any instance can verify it. Actor records (and their HMAC
- * keys) are seeded deterministically, so store.getActor(id) resolves on every
- * instance.
- */
 const SECRET = process.env.APP_SECRET || "sevapath-dev-secret-change-me";
 const COOKIE = "sid";
 
@@ -20,7 +10,7 @@ function sign(value: string): string {
   return crypto.createHmac("sha256", SECRET).update(value).digest("hex");
 }
 
-export function getCurrentActor(): Actor | undefined {
+export async function getCurrentActor(): Promise<Actor | undefined> {
   const raw = cookies().get(COOKIE)?.value;
   if (!raw) return undefined;
   const [payload, sig] = raw.split(".");
@@ -29,7 +19,7 @@ export function getCurrentActor(): Actor | undefined {
     return undefined;
   }
   const id = Buffer.from(payload, "base64").toString("utf8");
-  return store.getActor(id);
+  return await store.getActor(id);
 }
 
 export function createSessionToken(actorId: string): string {
@@ -38,7 +28,7 @@ export function createSessionToken(actorId: string): string {
   return `${payload}.${sig}`;
 }
 
-export function startSession(actorId: string): void {
+export async function startSession(actorId: string): Promise<void> {
   cookies().set(COOKIE, createSessionToken(actorId), {
     httpOnly: true,
     sameSite: "lax",
@@ -47,6 +37,6 @@ export function startSession(actorId: string): void {
   });
 }
 
-export function endSession(): void {
+export async function endSession(): Promise<void> {
   cookies().delete(COOKIE);
 }

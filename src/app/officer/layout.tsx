@@ -2,8 +2,8 @@ import { redirect } from "next/navigation";
 import { getCurrentActor } from "@/lib/session";
 import { TopBar } from "@/components/TopBar";
 
-export default function OfficerLayout({ children }: { children: React.ReactNode }) {
-  const actor = getCurrentActor();
+export default async function OfficerLayout({ children }: { children: React.ReactNode }) {
+  const actor = await getCurrentActor();
   if (!actor) redirect("/login?role=OFFICER");
   if (actor.role !== "OFFICER") redirect(actor.role === "CITIZEN" ? "/citizen" : "/supervisor");
   return (

@@ -6,34 +6,13 @@ import { GrievanceAction } from "./types";
 import * as store from "./store";
 import { DATA_DIR } from "./paths";
 
-/**
- * External anchoring layer.
- *
- * WHY: a tamper-evidence system that only checks its own database against
- * itself is circular - an attacker with DB access could rewrite the whole
- * chain consistently and it would "verify" against itself. Anchoring publishes
- * a fingerprint of recent events somewhere the application cannot quietly edit
- * afterward, so integrity is independently checkable.
- *
- * WHAT IS ANCHORED: not every event, but a combined (Merkle-style) root hash of
- * the event hashes added since the previous anchor. Only this hash leaves the
- * server - never any grievance content.
- *
- * PROVIDER PRIORITY:
- *   1. GitHub Gist (real, immutable, public, clickable) when GITHUB_TOKEN set.
- *   2. Local append-only public ledger (clearly labelled demo fallback) when
- *      no token is available, so the demo always works offline.
- *
- * TUNING: anchor after every 3 new events, or every 2 minutes, or immediately on
- * CLOSE so the closure anchor is visible in the live demo.
- */
-
 const ANCHOR_EVERY_N = 3;
 const ANCHOR_MAX_AGE_MS = 2 * 60 * 1000;
 
-function lastAnchoredSeq(caseId: string): number {
+async function lastAnchoredSeq(caseId: string): Promise<number> {
   let max = 0;
-  for (const a of store.listAnchors()) {
+  const anchors = await store.listAnchors();
+  for (const a of anchors) {
     for (const covered of a.events_covered as string[]) {
       const [c, s] = covered.split("#");
       if (c === caseId) max = Math.max(max, Number(s) || 0);
@@ -42,8 +21,8 @@ function lastAnchoredSeq(caseId: string): number {
   return max;
 }
 
-function lastAnchorTime(): number {
-  const all = store.listAnchors();
+async function lastAnchorTime(): Promise<number> {
+  const all = await store.listAnchors();
   if (all.length === 0) return 0;
   return Math.max(...all.map((a) => new Date(a.anchored_at).getTime()));
 }
@@ -56,11 +35,11 @@ export async function maybeAnchor(
   caseId: string,
   action: GrievanceAction
 ): Promise<void> {
-  const since = lastAnchoredSeq(caseId);
-  const events = store.getEventsByCase(caseId).filter((e) => e.sequence_number > since);
+  const since = await lastAnchoredSeq(caseId);
+  const events = (await store.getEventsByCase(caseId)).filter((e) => e.sequence_number > since);
   if (events.length === 0) return;
 
-  const age = Date.now() - lastAnchorTime();
+  const age = Date.now() - await lastAnchorTime();
   const shouldAnchor =
     events.length >= ANCHOR_EVERY_N || action === "CLOSED" || age > ANCHOR_MAX_AGE_MS;
 
@@ -100,7 +79,7 @@ export async function maybeAnchor(
     });
   }
 
-  store.insertAnchor({
+  await store.insertAnchor({
     anchor_id: anchorId,
     root_hash: rootHash,
     external_reference: externalReference,
@@ -152,10 +131,9 @@ async function anchorToGist(
   return data.html_url;
 }
 
-/** Anchor every event in a case unconditionally (used to pre-anchor seed cases). */
 export async function forceAnchor(caseId: string): Promise<void> {
-  const since = lastAnchoredSeq(caseId);
-  const events = store.getEventsByCase(caseId).filter((e) => e.sequence_number > since);
+  const since = await lastAnchoredSeq(caseId);
+  const events = (await store.getEventsByCase(caseId)).filter((e) => e.sequence_number > since);
   if (events.length === 0) return;
   const rootHash = sha256(events.map((e) => e.event_hash).join(""));
   const eventsCovered = events.map((e) => coveredKey(caseId, e.sequence_number));
@@ -175,7 +153,7 @@ export async function forceAnchor(caseId: string): Promise<void> {
   if (method === "local-ledger") {
     externalReference = await anchorToLocalLedger({ anchorId, rootHash, eventsCovered, anchoredAt });
   }
-  store.insertAnchor({ anchor_id: anchorId, root_hash: rootHash, external_reference: externalReference, method, anchored_at: anchoredAt, events_covered: eventsCovered });
+  await store.insertAnchor({ anchor_id: anchorId, root_hash: rootHash, external_reference: externalReference, method, anchored_at: anchoredAt, events_covered: eventsCovered });
 }
 
 async function anchorToLocalLedger(payload: {

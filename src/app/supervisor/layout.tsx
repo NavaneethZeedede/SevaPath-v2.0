@@ -2,8 +2,8 @@ import { redirect } from "next/navigation";
 import { getCurrentActor } from "@/lib/session";
 import { TopBar } from "@/components/TopBar";
 
-export default function SupervisorLayout({ children }: { children: React.ReactNode }) {
-  const actor = getCurrentActor();
+export default async function SupervisorLayout({ children }: { children: React.ReactNode }) {
+  const actor = await getCurrentActor();
   if (!actor) redirect("/login?role=SUPERVISOR");
   if (actor.role !== "SUPERVISOR") redirect(actor.role === "CITIZEN" ? "/citizen" : "/officer");
   return (

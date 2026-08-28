@@ -14,28 +14,24 @@ function nowIso() {
   return new Date().toISOString();
 }
 
-export function nextSequence(caseId: string): number {
-  return store.countEvents(caseId) + 1;
+export async function nextSequence(caseId: string): Promise<number> {
+  return (await store.countEvents(caseId)) + 1;
 }
 
-export function lastEventHash(caseId: string): string {
-  return store.getLastEventHash(caseId);
+export async function lastEventHash(caseId: string): Promise<string> {
+  return await store.getLastEventHash(caseId);
 }
 
-/**
- * The single append path. Every state change in the system goes through here.
- * There is intentionally NO update/delete of events in the normal flow.
- */
-export function appendEvent(input: {
+export async function appendEvent(input: {
   caseId: string;
   action: GrievanceAction;
   actor: Actor;
   payload: unknown;
   newDepartment?: string;
-}): GrievanceEvent {
+}): Promise<GrievanceEvent> {
   const { caseId, action, actor, payload, newDepartment } = input;
-  const seq = nextSequence(caseId);
-  const prev = lastEventHash(caseId);
+  const seq = await nextSequence(caseId);
+  const prev = await lastEventHash(caseId);
 
   const event = buildEvent({
     eventId: `evt_${crypto.randomUUID()}`,
@@ -50,10 +46,10 @@ export function appendEvent(input: {
     secretKey: actor.secretKey,
   });
 
-  store.insertEvent(event);
-  store.updateCaseStatus(caseId, action, newDepartment);
+  await store.insertEvent(event);
+  await store.updateCaseStatus(caseId, action, newDepartment);
 
-  const gCase = store.getCase(caseId);
+  const gCase = await store.getCase(caseId);
   if (gCase) {
     notifyCaseChange(gCase, action, actor).catch(() => {});
     maybeAnchor(caseId, action).catch(() => {});

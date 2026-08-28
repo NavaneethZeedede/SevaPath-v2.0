@@ -2,8 +2,8 @@ import * as store from "@/lib/store";
 
 export const dynamic = "force-dynamic";
 
-export default function InboxPage() {
-  const emails = store.listEmails();
+export default async function InboxPage() {
+  const emails = await store.listEmails();
   return (
     <main className="mx-auto max-w-3xl px-6 py-10">
       <h1 className="text-2xl font-semibold text-slate-900">Demo email inbox</h1>

@@ -3,17 +3,20 @@ import { RawEditForm } from "@/components/RawEditForm";
 
 export const dynamic = "force-dynamic";
 
-export default function AdminRawEditPage() {
-  const cases = store.listCases().map((c) => ({
-    case_id: c.case_id,
-    title: c.title,
-    events: store.getEventsByCase(c.case_id).map((e) => ({
-      event_id: e.event_id,
-      sequence_number: e.sequence_number,
-      action: e.action,
-      payload: e.payload,
-    })),
-  }));
+export default async function AdminRawEditPage() {
+  const cases = await store.listCases();
+  const casesWithEvents = await Promise.all(
+    cases.map(async (c) => ({
+      case_id: c.case_id,
+      title: c.title,
+      events: (await store.getEventsByCase(c.case_id)).map((e) => ({
+        event_id: e.event_id,
+        sequence_number: e.sequence_number,
+        action: e.action,
+        payload: e.payload,
+      })),
+    }))
+  );
 
   return (
     <main className="mx-auto max-w-2xl px-6 py-10">
@@ -22,7 +25,7 @@ export default function AdminRawEditPage() {
         Simulate an attacker with direct DB access. Hidden route — not in any navigation.
       </p>
       <div className="mt-6">
-        <RawEditForm cases={cases} />
+        <RawEditForm cases={casesWithEvents} />
       </div>
     </main>
   );

@@ -10,26 +10,31 @@ export interface CaseSummary {
   breachedSeq: number | null;
 }
 
-export function getCaseSummaries(filter?: {
+export async function getCaseSummaries(filter?: {
   citizenId?: string;
   department?: string;
-}): CaseSummary[] {
-  let cases = store.listCases();
-  if (filter?.citizenId) cases = store.listCases({ citizenId: filter.citizenId });
-  else if (filter?.department) cases = store.listCases({ department: filter.department });
+}): Promise<CaseSummary[]> {
+  let cases = await store.listCases();
+  if (filter?.citizenId) cases = await store.listCases({ citizenId: filter.citizenId });
+  else if (filter?.department) cases = await store.listCases({ department: filter.department });
 
-  return cases.map((c) => {
-    const events = store.getEventsByCase(c.case_id);
-    const v = verifyChain(events, (id) => store.getActor(id)?.secretKey);
-    const anchors = store.getAnchorsForCase(c.case_id);
-    return {
-      case: c,
-      status: v.status,
-      anchorCount: anchors.length,
-      lastAnchoredAt: anchors[0]?.anchored_at ?? null,
-      breachedSeq: v.status === "INTEGRITY_BREACH" ? v.events.find((e) => !e.ok)?.sequence_number ?? null : null,
-    };
-  });
+  const actors = await store.listActors();
+  const secretKeys = new Map(actors.map((a) => [a.id, a.secretKey]));
+
+  return Promise.all(
+    cases.map(async (c) => {
+      const events = await store.getEventsByCase(c.case_id);
+      const v = verifyChain(events, (id) => secretKeys.get(id));
+      const anchors = await store.getAnchorsForCase(c.case_id);
+      return {
+        case: c,
+        status: v.status,
+        anchorCount: anchors.length,
+        lastAnchoredAt: anchors[0]?.anchored_at ?? null,
+        breachedSeq: v.status === "INTEGRITY_BREACH" ? v.events.find((e) => !e.ok)?.sequence_number ?? null : null,
+      };
+    })
+  );
 }
 
 export interface CaseView {
@@ -41,15 +46,17 @@ export interface CaseView {
   breachedEvent?: VerifiedEvent;
 }
 
-export function getCaseView(caseId: string): CaseView | undefined {
-  const gCase = store.getCase(caseId);
+export async function getCaseView(caseId: string): Promise<CaseView | undefined> {
+  const gCase = await store.getCase(caseId);
   if (!gCase) return undefined;
 
-  const events = store.getEventsByCase(caseId);
-  const verification = verifyChain(events, (actorId) => store.getActor(actorId)?.secretKey);
+  const events = await store.getEventsByCase(caseId);
+  const actors = await store.listActors();
+  const secretKeys = new Map(actors.map((a) => [a.id, a.secretKey]));
+  const verification = verifyChain(events, (actorId) => secretKeys.get(actorId));
 
   const actorNames = new Map<string, string>();
-  for (const a of store.listActors()) actorNames.set(a.id, a.name);
+  for (const a of actors) actorNames.set(a.id, a.name);
 
   const enriched = verification.events.map((e) => ({
     ...e,
@@ -60,11 +67,14 @@ export function getCaseView(caseId: string): CaseView | undefined {
     ? enriched.find((e) => !e.ok)
     : undefined;
 
+  const anchors = await store.getAnchorsForCase(caseId);
+  const citizenName = actors.find((a) => a.id === gCase.citizen_id)?.name ?? gCase.citizen_id;
+
   return {
     case: gCase,
     verification,
-    anchors: store.getAnchorsForCase(caseId),
-    citizenName: store.getActor(gCase.citizen_id)?.name ?? gCase.citizen_id,
+    anchors,
+    citizenName,
     events: enriched,
     breachedEvent,
   };

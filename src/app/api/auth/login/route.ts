@@ -10,7 +10,7 @@ export async function POST(req: NextRequest) {
   if (!email) {
     return NextResponse.json({ error: "Email is required" }, { status: 400 });
   }
-  const actor = store.getActorByEmail(email);
+  const actor = await store.getActorByEmail(email);
   if (!actor) {
     return NextResponse.json({ error: "No demo account for that email" }, { status: 401 });
   }
@@ -28,7 +28,7 @@ export async function POST(req: NextRequest) {
 }
 
 export async function GET() {
-  const actor = getCurrentActor();
+  const actor = await getCurrentActor();
   if (!actor) return NextResponse.json({ actor: null });
   return NextResponse.json({
     actor: { id: actor.id, name: actor.name, role: actor.role, department: actor.department, email: actor.email },
@@ -36,6 +36,6 @@ export async function GET() {
 }
 
 export async function DELETE() {
-  endSession();
+  await endSession();
   return NextResponse.json({ ok: true });
 }

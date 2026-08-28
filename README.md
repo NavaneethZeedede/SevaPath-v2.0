@@ -20,11 +20,18 @@ Browser (React/Next.js)
 Next.js App Router  ── API routes + Server Components
    │  appendEvent() — the ONLY write path for case state
    ▼
-JSON file store (pure JS, no native deps)   External integrations
-    ├─ actors  (simulated HMAC keys)   ├─ Anchoring  (GitHub Gist / local ledger)
-   ├─ cases   (current stage)         ├─ Geocoding  (OSM Nominatim)
-   ├─ events  (the hash chain)        └─ Email      (Resend / demo inbox)
-   └─ anchors  (external fingerprints)
+Store layer (auto-switches)
+   ├─ Supabase Postgres (when SUPABASE_URL set)   ← guaranteed cross-instance
+   └─ JSON file store (local dev fallback)        ├─ actors  (simulated HMAC keys)
+                                                  ├─ cases   (current stage)
+                                                  ├─ events  (the hash chain)
+                                                  ├─ anchors (external fingerprints)
+                                                  └─ inbox   (demo emails)
+   ▲
+External integrations
+   ├─ Anchoring  (GitHub Gist / local ledger)
+   ├─ Geocoding  (OSM Nominatim)
+   └─ Email      (Resend / demo inbox)
 ```
 
 ### The hash chain (`src/lib/crypto.ts`)
@@ -137,16 +144,31 @@ and the anchor ledger are written to `/tmp/sevapath-data` instead of `./data`.
 login on one serverless instance is valid on any other instance — there is no
 shared server-side session store to fall out of sync.
 
-**Persistence caveat (important for live demos):** `/tmp` on Vercel is
-ephemeral and **per-instance**. The *case/event* dataset is re-created and
-re-seeded on every cold start, and concurrent requests may hit different
-instances with separate copies. For a single-presenter demo this is usually
-fine if you keep the deployment warm (don't let it idle between steps) — Vercel
-typically reuses one warm instance for a low-traffic demo. For guaranteed
-shared/durable state across instances, deploy to a platform with a persistent
-filesystem (Railway, Render, Fly.io) or swap the store for **Supabase Postgres**
-(the brief's recommended production option) — only `src/lib/store.ts` would
-change.
+### Persistence on Vercel
+
+**Important:** `/tmp` on Vercel is ephemeral and **per-instance**. For a
+single-presenter demo this is usually fine if you keep the deployment warm
+(don't let it idle between steps) — Vercel typically reuses one warm instance
+for a low-traffic demo.
+
+For **guaranteed shared/durable state across instances** (e.g. filing a
+grievance from one request and seeing it after a refresh that hits a different
+instance), deploy the free Supabase Postgres tier and set these environment
+variables in Vercel:
+
+```
+SUPABASE_URL=https://your-project.supabase.co
+SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
+```
+
+Then run the schema in `supabase-schema.sql` against your Supabase database
+(Supabase → SQL Editor → New query). No code changes are required beyond the
+store layer already included in this repo.
+
+**Cross-instance consistency:** When `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY`
+are set, every read and write goes to Supabase Postgres, so data is immediately
+visible to all Vercel instances. When they are unset, the app falls back to
+the local JSON file store (works for local development and single-instance demos).
 - Supervisor: `sup@gov.in`
 
 Seed data includes 3 completed sample cases (full clean chains, pre-anchored) and

@@ -3,9 +3,16 @@ import { getCurrentActor } from "@/lib/session";
 import { getCaseSummaries } from "@/lib/caseService";
 import { StatusPill } from "@/app/citizen/page";
 
-export default function OfficerDashboard() {
-  const actor = getCurrentActor()!;
-  const summaries = getCaseSummaries({ department: actor.department ?? "" });
+export default async function OfficerDashboard() {
+  const actor = await getCurrentActor();
+  if (!actor) {
+    return (
+      <div className="card mt-6 p-8 text-center text-slate-500">
+        Please sign in to view the officer queue.
+      </div>
+    );
+  }
+  const summaries = await getCaseSummaries({ department: actor.department ?? "" });
 
   const open = summaries.filter((s) => s.case.status !== "CLOSED");
   const closed = summaries.filter((s) => s.case.status === "CLOSED");

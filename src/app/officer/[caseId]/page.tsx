@@ -8,13 +8,14 @@ import { OfficerActions } from "@/components/OfficerActions";
 import { getCurrentActor } from "@/lib/session";
 import * as store from "@/lib/store";
 
-export default function OfficerCasePage({ params }: { params: { caseId: string } }) {
-  const view = getCaseView(params.caseId);
+export default async function OfficerCasePage({ params }: { params: { caseId: string } }) {
+  const view = await getCaseView(params.caseId);
   if (!view) notFound();
-  const actor = getCurrentActor()!;
+  const actor = await getCurrentActor();
+  if (!actor) notFound();
 
-  const officers = store
-    .listActors()
+  const officersList = await store.listActors();
+  const officers = officersList
     .filter((a) => a.role === "OFFICER")
     .map((a) => ({ id: a.id, name: a.name, department: a.department }));
   const departments = Array.from(new Set(officers.map((o) => o.department).filter(Boolean))) as string[];
