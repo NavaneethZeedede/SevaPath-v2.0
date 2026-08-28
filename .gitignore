@@ -1,6 +1,8 @@
 node_modules/
 .next/
 data/
+.kilo/
+*.tsbuildinfo
 .env
 .env.local
 *.db
