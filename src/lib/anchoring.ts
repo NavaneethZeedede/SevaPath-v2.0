@@ -1,9 +1,10 @@
 import crypto from "crypto";
 import path from "path";
+import fs from "fs";
 import { sha256 } from "./crypto";
 import { GrievanceAction } from "./types";
 import * as store from "./store";
-import { DATA_DIR } from "./db";
+import { DATA_DIR } from "./paths";
 
 /**
  * External anchoring layer.

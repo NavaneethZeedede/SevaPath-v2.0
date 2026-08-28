@@ -20,8 +20,8 @@ Browser (React/Next.js)
 Next.js App Router  ── API routes + Server Components
    │  appendEvent() — the ONLY write path for case state
    ▼
-SQLite (better-sqlite3)              External integrations
-   ├─ actors  (simulated HMAC keys)   ├─ Anchoring  (GitHub Gist / local ledger)
+JSON file store (pure JS, no native deps)   External integrations
+    ├─ actors  (simulated HMAC keys)   ├─ Anchoring  (GitHub Gist / local ledger)
    ├─ cases   (current stage)         ├─ Geocoding  (OSM Nominatim)
    ├─ events  (the hash chain)        └─ Email      (Resend / demo inbox)
    └─ anchors  (external fingerprints)
@@ -100,7 +100,8 @@ The "How this works" panel inside the app states the exact method in use.
 
 ## Run it
 
-Requires **Node.js 20+** (the `better-sqlite3` native module rebuilds on `npm install`).
+Requires **Node.js 18+**. The persistence layer is a pure-JS JSON store (no native
+modules), so it runs identically on local Node, containers, and Vercel serverless.
 
 ```bash
 npm install
@@ -127,23 +128,19 @@ RESEND_API_KEY=          # enables real email via Resend
 
 ## Deploying on Vercel
 
-Vercel's serverless filesystem is **read-only** except for `/tmp`. The app
-already handles this: when `VERCEL=1` is set (Vercel sets it automatically) the
-SQLite database and the anchor ledger are written to `/tmp/sevapath-data`
-instead of `./data`, so the "read-only filesystem" 500 is avoided.
-
-`better-sqlite3` is a native module and is listed in
-`serverComponentsExternalPackages` in `next.config.mjs` so it is not bundled.
+The app deliberately uses a **pure-JS JSON store with no native dependencies**
+so it runs unchanged on Vercel serverless. Vercel's filesystem is read-only
+except `/tmp`; when `VERCEL=1` is set (Vercel sets it automatically) the store
+and the anchor ledger are written to `/tmp/sevapath-data` instead of `./data`.
 
 **Persistence caveat (important for live demos):** `/tmp` on Vercel is
-ephemeral and **per-instance**. The database is re-created and re-seeded on
+ephemeral and **per-instance**. The dataset is re-created and re-seeded on
 every cold start, and concurrent requests may hit different instances with
-separate copies of the data. For a single-presenter demo this is usually fine
-if you keep the deployment warm (don't let it idle between steps). For reliable
+separate copies. For a single-presenter demo this is usually fine if you keep
+the deployment warm (don't let it idle between steps). For reliable
 shared/durable state, deploy to a platform with a persistent filesystem
 (Railway, Render, Fly.io) or swap the store for **Supabase Postgres** (the
-brief's recommended production option) — only `src/lib/db.ts` + `store.ts`
-would change.
+brief's recommended production option) — only `src/lib/store.ts` would change.
 - Supervisor: `sup@gov.in`
 
 Seed data includes 3 completed sample cases (full clean chains, pre-anchored) and
