@@ -100,6 +100,8 @@ The "How this works" panel inside the app states the exact method in use.
 
 ## Run it
 
+Requires **Node.js 20+** (the `better-sqlite3` native module rebuilds on `npm install`).
+
 ```bash
 npm install
 npm run build

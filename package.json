@@ -3,6 +3,9 @@
   "version": "1.0.0",
   "private": true,
   "description": "Grievance Escalation Integrity Tracker - tamper-evident grievance timeline with external anchoring",
+  "engines": {
+    "node": ">=20"
+  },
   "scripts": {
     "dev": "next dev",
     "build": "next build",
