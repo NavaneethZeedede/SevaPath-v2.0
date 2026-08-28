@@ -6,6 +6,9 @@ import { verifyChain } from "@/lib/crypto";
 import { appendEvent } from "@/lib/append";
 import { reverseGeocode } from "@/lib/geocode";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 export async function GET() {
   const actor = await getCurrentActor();
   if (!actor) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });

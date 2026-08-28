@@ -3,6 +3,9 @@ import { getCurrentActor } from "@/lib/session";
 import { getCaseSummaries } from "@/lib/caseService";
 import { StatusPill } from "@/app/citizen/page";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 export default async function OfficerDashboard() {
   const actor = await getCurrentActor();
   if (!actor) {

@@ -3,6 +3,9 @@ import { getCaseSummaries } from "@/lib/caseService";
 import { StatusPill } from "@/app/citizen/page";
 import * as store from "@/lib/store";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 export default async function SupervisorDashboard() {
   const summaries = await getCaseSummaries();
   const breaches = summaries.filter((s) => s.status === "INTEGRITY_BREACH");

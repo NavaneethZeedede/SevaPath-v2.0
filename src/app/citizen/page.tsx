@@ -2,6 +2,9 @@ import Link from "next/link";
 import { getCurrentActor } from "@/lib/session";
 import { getCaseSummaries } from "@/lib/caseService";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 export default async function CitizenDashboard() {
   const actor = await getCurrentActor();
   if (!actor) {

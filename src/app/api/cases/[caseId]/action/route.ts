@@ -4,6 +4,9 @@ import * as store from "@/lib/store";
 import { appendEvent } from "@/lib/append";
 import { GrievanceAction } from "@/lib/types";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 const OFFICER_ACTIONS: GrievanceAction[] = ["ASSIGNED", "ESCALATED", "RESPONDED", "CLOSED"];
 
 export async function POST(req: NextRequest, { params }: { params: { caseId: string } }) {

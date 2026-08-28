@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import * as store from "@/lib/store";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 export async function POST(req: NextRequest) {
   const body = await req.json().catch(() => ({}));
   const eventId = String(body.eventId ?? "");

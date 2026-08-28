@@ -9,6 +9,7 @@ export async function reverseGeocode(
   try {
     const url = `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lng}&zoom=18&addressdetails=1`;
     const res = await fetch(url, {
+      cache: "no-store",
       headers: {
         "User-Agent": "SevaPath-Integrity-Tracker/1.0 (hackathon demo)",
         "Accept-Language": "en",
@@ -30,6 +31,7 @@ export async function geocodeAddress(address: string): Promise<{
   try {
     const url = `https://nominatim.openstreetmap.org/search?format=jsonv2&q=${encodeURIComponent(address)}&limit=1`;
     const res = await fetch(url, {
+      cache: "no-store",
       headers: {
         "User-Agent": "SevaPath-Integrity-Tracker/1.0 (hackathon demo)",
         "Accept-Language": "en",

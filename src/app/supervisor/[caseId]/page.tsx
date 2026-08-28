@@ -6,6 +6,9 @@ import { AnchorIndicator } from "@/components/AnchorIndicator";
 import { Timeline } from "@/components/Timeline";
 import { HowItWorks } from "@/components/HowItWorks";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 export default async function SupervisorCasePage({ params }: { params: { caseId: string } }) {
   const view = await getCaseView(params.caseId);
   if (!view) notFound();

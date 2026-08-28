@@ -8,6 +8,9 @@ import { OfficerActions } from "@/components/OfficerActions";
 import { getCurrentActor } from "@/lib/session";
 import * as store from "@/lib/store";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 export default async function OfficerCasePage({ params }: { params: { caseId: string } }) {
   const view = await getCaseView(params.caseId);
   if (!view) notFound();
