@@ -2,7 +2,11 @@ import Database from "better-sqlite3";
 import path from "path";
 import fs from "fs";
 
-const DATA_DIR = path.join(process.cwd(), "data");
+// On Vercel the project directory is read-only; only /tmp is writable.
+// Locally we keep the conventional ./data directory (git-ignored).
+export const DATA_DIR = process.env.VERCEL
+  ? path.join("/tmp", "sevapath-data")
+  : path.join(process.cwd(), "data");
 const DB_PATH = path.join(DATA_DIR, "app.db");
 
 if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true });

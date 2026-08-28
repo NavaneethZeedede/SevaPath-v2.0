@@ -1,7 +1,9 @@
 import crypto from "crypto";
+import path from "path";
 import { sha256 } from "./crypto";
 import { GrievanceAction } from "./types";
 import * as store from "./store";
+import { DATA_DIR } from "./db";
 
 /**
  * External anchoring layer.
@@ -183,7 +185,7 @@ async function anchorToLocalLedger(payload: {
 }): Promise<string> {
   const fs = await import("fs");
   const path = await import("path");
-  const ledgerDir = path.join(process.cwd(), "data", "anchor-ledger");
+  const ledgerDir = path.join(DATA_DIR, "anchor-ledger");
   if (!fs.existsSync(ledgerDir)) fs.mkdirSync(ledgerDir, { recursive: true });
 
   const record = {

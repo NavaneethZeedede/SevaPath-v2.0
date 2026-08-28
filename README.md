@@ -122,6 +122,28 @@ RESEND_API_KEY=          # enables real email via Resend
 - Citizens: `priya.sharma@example.com`, `arjun.mehta@example.com`, `lakshmi.rao@example.com`, `faiz@example.com`
 - Officers: `ravik@water.gov.in`, `sunitai@water.gov.in` (Water);
   `deepakn@elec.gov.in`, `anitab@elec.gov.in` (Electricity)
+
+---
+
+## Deploying on Vercel
+
+Vercel's serverless filesystem is **read-only** except for `/tmp`. The app
+already handles this: when `VERCEL=1` is set (Vercel sets it automatically) the
+SQLite database and the anchor ledger are written to `/tmp/sevapath-data`
+instead of `./data`, so the "read-only filesystem" 500 is avoided.
+
+`better-sqlite3` is a native module and is listed in
+`serverComponentsExternalPackages` in `next.config.mjs` so it is not bundled.
+
+**Persistence caveat (important for live demos):** `/tmp` on Vercel is
+ephemeral and **per-instance**. The database is re-created and re-seeded on
+every cold start, and concurrent requests may hit different instances with
+separate copies of the data. For a single-presenter demo this is usually fine
+if you keep the deployment warm (don't let it idle between steps). For reliable
+shared/durable state, deploy to a platform with a persistent filesystem
+(Railway, Render, Fly.io) or swap the store for **Supabase Postgres** (the
+brief's recommended production option) — only `src/lib/db.ts` + `store.ts`
+would change.
 - Supervisor: `sup@gov.in`
 
 Seed data includes 3 completed sample cases (full clean chains, pre-anchored) and
