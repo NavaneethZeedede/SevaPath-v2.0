@@ -1,16 +1,9 @@
-# OS files
-.DS_Store
-Thumbs.db
-
-# Editor files
-.vscode/
-.idea/
-*.swp
-*.swo
-
-# Logs
-*.log
-npm-debug.log*
-
-# Dependency directories
 node_modules/
+.next/
+data/
+.env
+.env.local
+*.db
+*.db-wal
+*.db-shm
+next-env.d.ts
