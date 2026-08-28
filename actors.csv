@@ -7,4 +7,11 @@ OFF_W1,Ravi Kumar,OFFICER,Water Dept,ravik@water.gov.in,556640004fd4a0595e0c2558
 OFF_W2,Sunita Iyer,OFFICER,Water Dept,sunitai@water.gov.in,3be93ca56b18e72efbc07a1f7822b34204f45c5adc28067b3c293eed982eac29
 OFF_E1,Deepak Nair,OFFICER,Electricity Dept,deepakn@elec.gov.in,c1de094c3c778292174ae33ecb52cf02ccba7280b09c74b82a5aef6629a03f30
 OFF_E2,Anita Bose,OFFICER,Electricity Dept,anitab@elec.gov.in,7c9f7722b6f81728361bfc1cb95b97687db96464a2b06eaa752f386e6fb8b1ce
-SUP_1,M. Venkatesh,SUPERVISOR,,sup@gov.in,d89e48bc1bd25bdbf9ebc183f31ec53212ccdfb13247e167f12578a17868ca2e
+OFF_R1,Kiran Shetty,OFFICER,Roads & Infrastructure Dept,kiran@roads.gov.in,8c187f0e5ec46b2f4eeac5ece93c56de398ba0757b66dbf0bcffade389419de5
+OFF_R2,Meera Pillai,OFFICER,Roads & Infrastructure Dept,meera@roads.gov.in,0a3dee64af45debe4d210af577b0c23a2331c6c2eb89d014f4f89a22f59681f8
+OFF_S1,Ganesh Verma,OFFICER,Sanitation Dept,ganesh@sanitation.gov.in,60614bea096f42f082d7dbfd144db3a7e168b02433a984ccaa474518bf842654
+OFF_S2,Divya Menon,OFFICER,Sanitation Dept,divya@sanitation.gov.in,7bccc83b16877551e5aa493cf60089c4c8d1487aac2346405fc1248e5cea7165
+OFF_REV1,Prakash Joshi,OFFICER,Revenue & Property Tax Dept,prakash@revenue.gov.in,8809294467e4a41ded22434daeb41bf5befde269c11c40bd1ff27e7aa03fe0b4
+OFF_REV2,Shobha Rani,OFFICER,Revenue & Property Tax Dept,shobha@revenue.gov.in,510de0389045c4b887618aa3ee853d719c838808831f10402b1b294fca4589e4
+OFF_GA1,Naveen Chandra,OFFICER,General Administration Dept,naveen@genadmin.gov.in,7ecd459928991c36dff512d576e7d07e4a979cf868fe33648b92f5e779a26fbc
+OFF_GA2,Farida Khan,OFFICER,General Administration Dept,farida@genadmin.gov.in,b0746497937c4875cead2fde340f233547388cdb404793dbbca5287a246783ec

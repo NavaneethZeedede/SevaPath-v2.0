@@ -8,6 +8,7 @@ export interface CaseSummary {
   anchorCount: number;
   lastAnchoredAt: string | null;
   breachedSeq: number | null;
+  citizenName: string;
 }
 
 export async function getCaseSummaries(filter?: {
@@ -32,6 +33,7 @@ export async function getCaseSummaries(filter?: {
         anchorCount: anchors.length,
         lastAnchoredAt: anchors[0]?.anchored_at ?? null,
         breachedSeq: v.status === "INTEGRITY_BREACH" ? v.events.find((e) => !e.ok)?.sequence_number ?? null : null,
+        citizenName: actors.find((a) => a.id === c.citizen_id)?.name ?? c.citizen_id,
       };
     })
   );

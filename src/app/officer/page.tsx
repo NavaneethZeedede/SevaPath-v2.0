@@ -39,7 +39,7 @@ export default async function OfficerDashboard() {
                 <div>
                   <div className="font-semibold text-slate-800">{s.case.title}</div>
                   <div className="text-xs text-slate-500">
-                    {s.case.case_id} · filed by {s.case.citizen_id} · {s.case.location_text ?? "—"}
+                    {s.case.case_id} · filed by {s.citizenName} · {s.case.location_text ?? "—"}
                   </div>
                 </div>
                 <StatusPill status={s.status} />

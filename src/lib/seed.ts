@@ -27,6 +27,14 @@ const SEED_ACTORS: SeedActor[] = [
   { id: "OFF_W2", name: "Sunita Iyer", role: "OFFICER", department: "Water Dept", email: "sunitai@water.gov.in" },
   { id: "OFF_E1", name: "Deepak Nair", role: "OFFICER", department: "Electricity Dept", email: "deepakn@elec.gov.in" },
   { id: "OFF_E2", name: "Anita Bose", role: "OFFICER", department: "Electricity Dept", email: "anitab@elec.gov.in" },
+  { id: "OFF_R1", name: "Kiran Shetty", role: "OFFICER", department: "Roads & Infrastructure Dept", email: "kiran@roads.gov.in" },
+  { id: "OFF_R2", name: "Meera Pillai", role: "OFFICER", department: "Roads & Infrastructure Dept", email: "meera@roads.gov.in" },
+  { id: "OFF_S1", name: "Ganesh Verma", role: "OFFICER", department: "Sanitation Dept", email: "ganesh@sanitation.gov.in" },
+  { id: "OFF_S2", name: "Divya Menon", role: "OFFICER", department: "Sanitation Dept", email: "divya@sanitation.gov.in" },
+  { id: "OFF_REV1", name: "Prakash Joshi", role: "OFFICER", department: "Revenue & Property Tax Dept", email: "prakash@revenue.gov.in" },
+  { id: "OFF_REV2", name: "Shobha Rani", role: "OFFICER", department: "Revenue & Property Tax Dept", email: "shobha@revenue.gov.in" },
+  { id: "OFF_GA1", name: "Naveen Chandra", role: "OFFICER", department: "General Administration Dept", email: "naveen@genadmin.gov.in" },
+  { id: "OFF_GA2", name: "Farida Khan", role: "OFFICER", department: "General Administration Dept", email: "farida@genadmin.gov.in" },
   { id: "SUP_1", name: "M. Venkatesh", role: "SUPERVISOR", department: null, email: "sup@gov.in" },
 ];
 
@@ -99,6 +107,20 @@ export async function ensureSeeded(): Promise<void> {
   if (seeded) return;
   const existing = await store.getActor("CIT_1");
   if (existing) {
+    // DB already seeded — but still upsert the actor roster so newly added
+    // demo officers (e.g. for Roads/Sanitation/Revenue/General departments)
+    // appear on deployments that were seeded before they existed.
+    // insertActor upserts and keys are deterministic, so this is idempotent.
+    for (const a of SEED_ACTORS) {
+      await store.insertActor({
+        id: a.id,
+        name: a.name,
+        role: a.role,
+        department: a.department,
+        email: a.email,
+        secretKey: simKey(a.id),
+      });
+    }
     seeded = true;
     return;
   }

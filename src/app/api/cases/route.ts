@@ -5,6 +5,7 @@ import * as store from "@/lib/store";
 import { verifyChain } from "@/lib/crypto";
 import { appendEvent } from "@/lib/append";
 import { reverseGeocode } from "@/lib/geocode";
+import { departmentForCategory } from "@/lib/departments";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -45,7 +46,7 @@ export async function POST(req: NextRequest) {
   const body = await req.json().catch(() => ({}));
   const title = String(body.title ?? "").trim();
   const description = String(body.description ?? "").trim();
-  const category = String(body.category ?? "General").trim();
+  const category = String(body.category ?? "").trim() || "Other";
   const locationText = String(body.location_text ?? "").trim() || null;
   const lat = body.lat != null ? Number(body.lat) : null;
   const lng = body.lng != null ? Number(body.lng) : null;
@@ -60,6 +61,7 @@ export async function POST(req: NextRequest) {
   }
 
   const caseId = `SVP-${Math.floor(1000 + Math.random() * 9000)}-${crypto.randomUUID().slice(0, 4)}`;
+  const department = departmentForCategory(category);
   await store.insertCase({
     case_id: caseId,
     citizen_id: actor.id,
@@ -69,7 +71,7 @@ export async function POST(req: NextRequest) {
     location_text: resolvedLocation,
     lat,
     lng,
-    department: "Water Dept",
+    department,
     status: "FILED",
     created_at: new Date().toISOString(),
   });
