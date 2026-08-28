@@ -1,0 +1,4 @@
+case_id,citizen_id,title,category,description,location_text,lat,lng,department,status,created_at
+SVP-1001,CIT_1,Water tanker has not arrived in 3 weeks,Water Supply,Our ward has not received the scheduled drinking-water tanker for 21 days. Residents are forced to buy water at high cost.,"Ward 12, Anantapur, Andhra Pradesh",,,Water Dept,CLOSED,2026-08-25T09:15:31.528Z
+SVP-1002,CIT_2,Streetlight outside house has been out for a month,Electricity,"The streetlight at the lane entrance has been dark for a month, creating a safety hazard at night.","5th Cross, RT Nagar, Bengaluru",,,Electricity Dept,CLOSED,2026-08-25T09:15:31.528Z
+SVP-1003,CIT_3,Incorrect property tax demand after reassessment,Water Dept,I was billed twice for the same quarter after the recent reassessment. Requesting correction.,"Lakshmi Nagar, Vijayawada",,,Water Dept,CLOSED,2026-08-25T09:15:31.528Z

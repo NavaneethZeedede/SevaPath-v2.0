@@ -162,8 +162,9 @@ SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
 ```
 
 Then run the schema in `supabase-schema.sql` against your Supabase database
-(Supabase → SQL Editor → New query). No code changes are required beyond the
-store layer already included in this repo.
+(Supabase → SQL Editor → New query). For initial seed data, you can import the
+CSV files included in this repo: `actors.csv`, `cases.csv`, `events.csv`,
+`anchors.csv`, and `inbox.csv`.
 
 **Cross-instance consistency:** When `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY`
 are set, every read and write goes to Supabase Postgres, so data is immediately

@@ -1,0 +1,3 @@
+id,to_email,subject,body,case_id,created_at
+1,priya.sharma@example.com,Your grievance SVP-1001 has been filed,Your grievance has been registered with case ID SVP-1001.,SVP-1001,2026-08-28T09:15:31.535Z
+2,arjun.mehta@example.com,Update on SVP-1002: Assigned to officer,Case SVP-1002 has been assigned to Deepak Nair.,SVP-1002,2026-08-28T09:15:31.535Z

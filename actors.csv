@@ -1,0 +1,10 @@
+id,name,role,department,email,secret_key
+CIT_1,Priya Sharma,CITIZEN,,priya.sharma@example.com,a7acceaef292160de180e8e64bbfa2c3ae24e0f3a6b75cdf9d95a352dd78332b
+CIT_2,Arjun Mehta,CITIZEN,,arjun.mehta@example.com,59487de9f0d1bfecd8bd6513cfa1b5bc3ef2abffff0221aac1294f5dab38d813
+CIT_3,Lakshmi Rao,CITIZEN,,lakshmi.rao@example.com,14681219fc22a152a146cd1fb5533f06939d9be4c61ab76ce838e8adf459163e
+CIT_4,Mohammed Faiz,CITIZEN,,faiz@example.com,53af3b9bf3fa6777ec3e85eefa7fcc38a5b489d1703b1fa9d8fe47e5c3ac729b
+OFF_W1,Ravi Kumar,OFFICER,Water Dept,ravik@water.gov.in,556640004fd4a0595e0c25580407ef58f52dab748e4fef209eb17b939403d348
+OFF_W2,Sunita Iyer,OFFICER,Water Dept,sunitai@water.gov.in,3be93ca56b18e72efbc07a1f7822b34204f45c5adc28067b3c293eed982eac29
+OFF_E1,Deepak Nair,OFFICER,Electricity Dept,deepakn@elec.gov.in,c1de094c3c778292174ae33ecb52cf02ccba7280b09c74b82a5aef6629a03f30
+OFF_E2,Anita Bose,OFFICER,Electricity Dept,anitab@elec.gov.in,7c9f7722b6f81728361bfc1cb95b97687db96464a2b06eaa752f386e6fb8b1ce
+SUP_1,M. Venkatesh,SUPERVISOR,,sup@gov.in,d89e48bc1bd25bdbf9ebc183f31ec53212ccdfb13247e167f12578a17868ca2e
