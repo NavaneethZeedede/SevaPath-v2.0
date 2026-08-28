@@ -133,14 +133,20 @@ so it runs unchanged on Vercel serverless. Vercel's filesystem is read-only
 except `/tmp`; when `VERCEL=1` is set (Vercel sets it automatically) the store
 and the anchor ledger are written to `/tmp/sevapath-data` instead of `./data`.
 
+**Auth is stateless** (a signed, HTTP-only cookie carrying the actor id), so a
+login on one serverless instance is valid on any other instance — there is no
+shared server-side session store to fall out of sync.
+
 **Persistence caveat (important for live demos):** `/tmp` on Vercel is
-ephemeral and **per-instance**. The dataset is re-created and re-seeded on
-every cold start, and concurrent requests may hit different instances with
-separate copies. For a single-presenter demo this is usually fine if you keep
-the deployment warm (don't let it idle between steps). For reliable
-shared/durable state, deploy to a platform with a persistent filesystem
-(Railway, Render, Fly.io) or swap the store for **Supabase Postgres** (the
-brief's recommended production option) — only `src/lib/store.ts` would change.
+ephemeral and **per-instance**. The *case/event* dataset is re-created and
+re-seeded on every cold start, and concurrent requests may hit different
+instances with separate copies. For a single-presenter demo this is usually
+fine if you keep the deployment warm (don't let it idle between steps) — Vercel
+typically reuses one warm instance for a low-traffic demo. For guaranteed
+shared/durable state across instances, deploy to a platform with a persistent
+filesystem (Railway, Render, Fly.io) or swap the store for **Supabase Postgres**
+(the brief's recommended production option) — only `src/lib/store.ts` would
+change.
 - Supervisor: `sup@gov.in`
 
 Seed data includes 3 completed sample cases (full clean chains, pre-anchored) and

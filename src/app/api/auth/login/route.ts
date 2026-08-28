@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
-import { startSession, getCurrentActor, endSession } from "@/lib/session";
+import { createSessionToken, getCurrentActor, endSession } from "@/lib/session";
 import * as store from "@/lib/store";
+
+const COOKIE = "sid";
 
 export async function POST(req: NextRequest) {
   const body = await req.json().catch(() => ({}));
@@ -12,11 +14,17 @@ export async function POST(req: NextRequest) {
   if (!actor) {
     return NextResponse.json({ error: "No demo account for that email" }, { status: 401 });
   }
-  startSession(actor.id);
-  return NextResponse.json({
+  const res = NextResponse.json({
     ok: true,
     actor: { id: actor.id, name: actor.name, role: actor.role, department: actor.department, email: actor.email },
   });
+  res.cookies.set(COOKIE, createSessionToken(actor.id), {
+    httpOnly: true,
+    sameSite: "lax",
+    path: "/",
+    maxAge: 60 * 60 * 24 * 7,
+  });
+  return res;
 }
 
 export async function GET() {

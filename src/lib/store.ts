@@ -27,7 +27,6 @@ interface DB {
   cases: Record<string, GrievanceCase>;
   events: GrievanceEvent[];
   anchors: (Anchor & { events_covered: string[] })[];
-  sessions: Record<string, { actor_id: string; created_at: string }>;
   inbox: {
     id: number;
     to_email: string;
@@ -43,7 +42,7 @@ let cache: DB | null = null;
 let seeded = false;
 
 function emptyDb(): DB {
-  return { actors: {}, cases: {}, events: [], anchors: [], sessions: {}, inbox: [], _emailSeq: 1 };
+  return { actors: {}, cases: {}, events: [], anchors: [], inbox: [], _emailSeq: 1 };
 }
 
 function load(): DB {
@@ -183,26 +182,6 @@ export function listAnchors(): Anchor[] {
   return load()
     .anchors.sort((a, b) => b.anchored_at.localeCompare(a.anchored_at))
     .map((a) => ({ ...a, events_covered: [...a.events_covered] }));
-}
-
-/* ---------------------------- sessions ---------------------------- */
-
-export function createSession(token: string, actorId: string) {
-  const db = load();
-  db.sessions[token] = { actor_id: actorId, created_at: new Date().toISOString() };
-  save();
-}
-
-export function getSessionActor(token: string): Actor | undefined {
-  const s = load().sessions[token];
-  if (!s) return undefined;
-  return getActor(s.actor_id);
-}
-
-export function deleteSession(token: string) {
-  const db = load();
-  delete db.sessions[token];
-  save();
 }
 
 /* --------------------------- demo inbox --------------------------- */
