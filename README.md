@@ -214,3 +214,4 @@ src/components/ Timeline · IntegrityBadge · AnchorIndicator · TopBar ·
 
 Real PKI/certificates, wallets, mobile app, multi-language, SMS, payment logic,
 and any "blockchain" terminology in citizen/officer UI.
+https://seva-path-v2-0-lci5m48gy-navaneethzeededes-projects.vercel.app/ 
